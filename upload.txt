@@ -1,0 +1,6 @@
+# https://hynek.me/articles/sharing-your-labor-of-love-pypi-quick-and-dirty/
+#
+# python setup.py bdist_wheel upload -r https://pypi.python.org/pypi
+
+bumpversion major|minor|patch
+python setup.py sdist upload -r https://pypi.python.org/pypi
