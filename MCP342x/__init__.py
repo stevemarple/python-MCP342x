@@ -192,19 +192,21 @@ class MCP342x(object):
                 
                 return count, config_used
                     
-    def read(self):
+    def read(self, scale_factor=None):
+        if scale_factor is None:
+            scale_factor = self.scale_factor
         count, config_used = self.raw_read()
         lsb = MCP342x.config_to_lsb(config_used)
-        voltage = count * lsb * self.scale_factor \
+        voltage = count * lsb * scale_factor \
             / MCP342x.config_to_gain(config_used)
         return voltage
         
-    def convert_and_read(self, sleep=True, samples=1):
+    def convert_and_read(self, sleep=True, samples=1, **kwargs):
         r = 0.0
         for n in range(samples):
             self.convert()
             if sleep:
                 time.sleep(0.95 * self.get_conversion_time())
-            r += self.read()
+            r += self.read(**kwargs)
         return r / samples
 
