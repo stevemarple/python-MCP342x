@@ -90,7 +90,7 @@ class MCP342x(object):
         return self.bus
 
     def get_address(self):
-        return self.addr
+        return self.address
 
     def get_gain(self):
         return MCP342x.config_to_gain(self.config)
