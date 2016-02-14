@@ -196,6 +196,8 @@ class MCP342x(object):
         if scale_factor is None:
             scale_factor = self.scale_factor
         count, config_used = self.raw_read()
+        if config_used != self.config:
+            raise Exception('Config does not match')
         lsb = MCP342x.config_to_lsb(config_used)
         voltage = count * lsb * scale_factor \
             / MCP342x.config_to_gain(config_used)
