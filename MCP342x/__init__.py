@@ -71,6 +71,95 @@ class MCP342x(object):
     def config_to_lsb(config):
         return MCP342x._resolution_to_lsb[MCP342x.config_to_resolution(config)]
 
+    @staticmethod
+    def configure_device(bus, address, config):
+        bus.write_byte(address, config)
+
+    @staticmethod
+    def convert_and_read_many(adcs, samples=None, aggregate=None):
+        # Group the sampling into batches with different device
+        # addresses (cannot simultaneously sample from different
+        # channels of the same device). Devices may not all be on the
+        # same bus.
+        batches = {}          # dict of lists
+        addresses = {}        # dict of lists
+        position = {}         # dict of lists 
+        unique_addresses = {} # dict of dicts
+        num_batches = 0
+        pn = -1
+        for a in adcs:
+            pn += 1
+            bus = a.get_bus()
+            if bus not in batches:
+                batches[bus] = []
+                addresses[bus] = []
+                unique_addresses[bus] = {}
+            done = False
+            # Check if this sampling can be done with one of the
+            # existing batches of sampling
+            for n in range(len(addresses[bus])):
+                if a.get_address() not in addresses[bus][n]:
+                    # Use existing batch
+                    batches[bus][n].append(a)
+                    addresses[bus][n].append(a.get_address())
+                    position[bus][n].append(pn)
+                    unique_addresses[bus][a.get_address()] = None
+                    done = True
+                    break
+            if not done:
+                # Must start a new batch
+                batches[bus].append([a])
+                addresses[bus].append([a.get_address()])
+                position[bus].append([pn])
+                unique_addresses[bus][a.get_address()] = None
+                # Remember highest numbered batch across all buses
+                num_batches = max(num_batches, len(batches[bus]))
+        
+        if samples:
+            results = [[0] * samples] * pn
+        else:
+            results = [0] * len(adcs)
+
+        for sn in (range(samples) if samples else [0]):
+            # Configure all devices form each batch, for each bus. Issues
+            # general_call_convert for all buses then read back the
+            # results from each batch.
+            for bn in range(num_batches):
+                # Configure
+                for bus in batches:
+                    if bn < len(batches[bus]):
+                        unconfigured_devices = {
+                            key: None for key in unique_addresses[bus]}
+                        for a in batches[bus][bn]:
+                            a.configure()
+                            del unconfigured_devices[a.get_address()]
+                        # Configure unused devices for 12-bit sampling so
+                        # that we aren't waiting for them to complete
+                        # sampling later
+                        for addr in unconfigured_devices[bus]:
+                            MCP342x.configure_device(bus, addr, 0)
+
+                # Convert
+                for bus in batches:
+                    if bn < len(batches[bus]):
+                        general_call_convert(bus)
+
+                # Read results
+                for bus in batches:
+                    if bn < len(batches[bus]):
+                        for n in range(len(batches[bus][bn])):
+                            a = batches[bus][bn][n]
+                            pn = position[bus][bn][n]
+                            if samples:
+                                results[pn][sn] = a.read()
+                            else:
+                                results[pn] = a.read()
+        if aggregate:
+            for pn in range(len(adcs)):
+                results[pn] = aggregate(results[pn])
+        return results
+
+
     def __init__(self, bus, address, device='MCP3424', scale_factor=1.0):
         if device not in ('MCP3422', 'MCP3423', 'MCP3424', 
                           'MCP3426', 'MCP3427', 'MCP3428'):
