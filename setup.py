@@ -44,7 +44,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     install_requires=['smbus'],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'Natural Language :: English',
