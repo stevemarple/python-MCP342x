@@ -1,1 +1,3 @@
-include *.rst LICENSE 
+include *.rst LICENSE \
+	MCP342x/examples/convert_read_many.py
+
