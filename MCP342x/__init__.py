@@ -1,7 +1,7 @@
 """Access Microchip MCP342x analogue to digital converters."""
 
 __author__ = 'Steve Marple'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __license__ = 'MIT'
 
 import logging

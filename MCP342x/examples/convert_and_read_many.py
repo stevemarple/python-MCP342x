@@ -9,7 +9,7 @@ import numpy as np
 
 
 __author__ = 'Steve Marple'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __license__ = 'MIT'
 
 
