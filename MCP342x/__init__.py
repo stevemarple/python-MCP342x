@@ -2,7 +2,7 @@
 
 __author__ = 'Steve Marple'
 __version__ = '0.3.0'
-__license__ = 'PSF'
+__license__ = 'MIT'
 
 import logging
 import time
