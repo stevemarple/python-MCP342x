@@ -49,7 +49,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Natural Language :: English',
         'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
+        'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
