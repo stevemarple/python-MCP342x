@@ -284,9 +284,9 @@ class MCP342x(object):
         return MCP342x._conversion_time[self.get_resolution()] 
 
     def configure(self):
-        """
-        Configure the device
-        """
+        """Configure the device.
+
+        Send the device configuration saved inside the MCP342x object to the target device."""
         logger.debug('Configuring ' + hex(self.get_address())
                      + ' ch: ' + str(self.get_channel())
                      + ' res: ' + str(self.get_resolution())
@@ -294,12 +294,9 @@ class MCP342x(object):
         self.bus.write_byte(self.address, self.config)
 
     def convert(self):
-        """
-        Initiate one-shot conversion.
+        """Initiate one-shot conversion.
 
-        The current settings are used, with the exception of continuous
-        mode.
-        """
+        The current settings are used, with the exception of continuous mode."""
         c = self.config
         c &= (~MCP342x._continuous_mode_mask & 0x7f)  # Force one-shot
         c |= MCP342x._not_ready_mask                  # Convert
