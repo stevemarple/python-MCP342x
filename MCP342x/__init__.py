@@ -235,8 +235,9 @@ class MCP342x(object):
     def get_offset(self):
         return self.offset
 
-    def set_bus(self, bus):
-        bus = self.bus
+    # def set_bus(self, bus):
+    #     # bus = self.bus
+    #     self.bus = bus
 
     def set_address(self, address):
         self.address = address
