@@ -354,7 +354,7 @@ class MCP342x(object):
         if config_used != self.config:
             raise Exception('Config does not match ('
                             + MCP342x.config_to_str(config_used) + ' != ' 
-                            + MCP342x.config_to_str(seld.config))
+                            + MCP342x.config_to_str(self.config))
         
         if raw:
             return count
