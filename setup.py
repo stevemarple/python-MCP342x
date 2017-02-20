@@ -42,7 +42,7 @@ setup(
     author='Steve Marple',
     author_email='s.marple@lancaster.ac.uk',
     packages=find_packages(exclude=['tests*']),
-    install_requires=['smbus'],
+    install_requires=['smbus-cffi'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Education',
