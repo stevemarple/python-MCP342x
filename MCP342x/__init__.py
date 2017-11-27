@@ -1,18 +1,18 @@
 """Access Microchip MCP342x analogue to digital converters."""
 
-__author__ = 'Steve Marple'
-__version__ = '0.3.0'
-__license__ = 'PSF'
-
 import logging
 import time
 
-logger = logging.getLogger(__name__)
+
+__author__ = 'Steve Marple'
+__version__ = '0.3.3'
+__license__ = 'MIT'
 
 
 class MCP342x(object):
-    '''MCP342x class'''
-
+    """
+    Class to represent MCP342x ADC.
+    """
     _gain_mask            = 0b00000011
     _resolution_mask      = 0b00001100
     _continuous_mode_mask = 0b00010000
@@ -44,29 +44,27 @@ class MCP342x(object):
 
     @staticmethod
     def general_call_reset(bus):
-        bus.write_byte(0, 6);
+        bus.write_byte(0, 6)
         return
 
     @staticmethod
     def general_call_latch(bus):
-        bus.write_byte(0, 4);
+        bus.write_byte(0, 4)
         return
 
     @staticmethod
     def general_call_convert(bus):
         logger.debug('general_call_convert')
-        bus.write_byte(0, 8);
+        bus.write_byte(0, 8)
         return
 
     @staticmethod
     def config_to_gain(config):
-        return [g for g,c in MCP342x._gain_to_config.iteritems() \
-                    if c == config & MCP342x._gain_mask][0]
+        return [g for g, c in MCP342x._gain_to_config.iteritems() if c == config & MCP342x._gain_mask][0]
 
     @staticmethod
     def config_to_resolution(config):
-        return [g for g,c in MCP342x._resolution_to_config.iteritems() \
-                    if c == config & MCP342x._resolution_mask][0]
+        return [g for g, c in MCP342x._resolution_to_config.iteritems() if c == config & MCP342x._resolution_mask][0]
 
     @staticmethod
     def config_to_lsb(config):
@@ -92,10 +90,10 @@ class MCP342x(object):
         # addresses (cannot simultaneously sample from different
         # channels of the same device). Devices may not all be on the
         # same bus.
-        batches = {}          # dict of lists
-        addresses = {}        # dict of lists
-        position = {}         # dict of lists 
-        unique_addresses = {} # dict of dicts
+        batches = {}           # dict of lists
+        addresses = {}         # dict of lists
+        position = {}          # dict of lists
+        unique_addresses = {}  # dict of dicts
         num_batches = 0
         pn = -1
         for a in adcs:
@@ -129,7 +127,7 @@ class MCP342x(object):
         
         if samples is not None:
             # Must avoid duplicating the same list when initializing!
-            results = [[0] * samples for x in range(len(adcs))]
+            results = [[0] * samples for _ in range(len(adcs))]
         else:
             results = [0] * len(adcs)
 
@@ -173,7 +171,6 @@ class MCP342x(object):
                 results[pn] = aggregate(results[pn])
         return results
 
-
     def __init__(self, 
                  bus, 
                  address, 
@@ -200,7 +197,6 @@ class MCP342x(object):
         self.set_resolution(resolution)
         self.set_continuous_mode(continuous_mode)
 
-        
     def __repr__(self):
         addr = hex(self.address)
         return (type(self).__name__ + ': device=' + self.device 
@@ -222,12 +218,10 @@ class MCP342x(object):
         return bool(self.config & MCP342x._continuous_mode_mask)
 
     def get_channel(self):
-        return [g for g,c in MCP342x._channel_to_config.iteritems() \
-                    if c == self.config & MCP342x._channel_mask][0]
+        return [g for g, c in MCP342x._channel_to_config.iteritems() if c == self.config & MCP342x._channel_mask][0]
 
     def get_config(self):
         return self.config
-
 
     def get_scale_factor(self):
         return self.scale_factor
@@ -235,8 +229,9 @@ class MCP342x(object):
     def get_offset(self):
         return self.offset
 
-    def set_bus(self, bus):
-        bus = self.bus
+    # def set_bus(self, bus):
+    #     # bus = self.bus
+    #     self.bus = bus
 
     def set_address(self, address):
         self.address = address
@@ -289,27 +284,25 @@ class MCP342x(object):
         return MCP342x._conversion_time[self.get_resolution()] 
 
     def configure(self):
-        '''Configure the device'''
+        """Configure the device.
+
+        Send the device configuration saved inside the MCP342x object to the target device."""
         logger.debug('Configuring ' + hex(self.get_address())
                      + ' ch: ' + str(self.get_channel())
                      + ' res: ' + str(self.get_resolution())
                      + ' gain: ' + str(self.get_gain()))
         self.bus.write_byte(self.address, self.config)
 
-
     def convert(self):
-        '''Initiate one-shot conversion.
+        """Initiate one-shot conversion.
 
-        The current settings are used, with the exception of continuous
-        mode.
-        '''
+        The current settings are used, with the exception of continuous mode."""
         c = self.config
-        c &= (~MCP342x._continuous_mode_mask & 0x7f) # Force one-shot
-        c |= MCP342x._not_ready_mask                 # Convert
+        c &= (~MCP342x._continuous_mode_mask & 0x7f)  # Force one-shot
+        c |= MCP342x._not_ready_mask                  # Convert
         logger.debug('Convert ' + hex(self.address) + ' config: ' + bin(c))
         self.bus.write_byte(self.address, c)
 
-        
     def raw_read(self):
         res = self.get_resolution()
         bytes_to_read = 4 if res == 18 else 3
@@ -354,7 +347,7 @@ class MCP342x(object):
         if config_used != self.config:
             raise Exception('Config does not match ('
                             + MCP342x.config_to_str(config_used) + ' != ' 
-                            + MCP342x.config_to_str(seld.config))
+                            + MCP342x.config_to_str(self.config))
         
         if raw:
             return count
@@ -363,8 +356,7 @@ class MCP342x(object):
         # difference between IN+ and IN-. Other scale_factors can be
         # used to account for gain or attenuation, or to convert
         # voltage to some sensor input value.
-        voltage = (count * lsb * scale_factor \
-                       / MCP342x.config_to_gain(config_used)) + offset
+        voltage = (count * lsb * scale_factor / MCP342x.config_to_gain(config_used)) + offset
         return voltage
 
     def convert_and_read(self, 
@@ -387,3 +379,5 @@ class MCP342x(object):
             r = aggregate(r)
         return r
 
+
+logger = logging.getLogger(__name__)
