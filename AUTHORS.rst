@@ -7,4 +7,6 @@ Credits
 Contributors
 ------------
 
+- jrm224 https://github.com/jrm224
+
 Please append your name here when you submit your first pull request.
